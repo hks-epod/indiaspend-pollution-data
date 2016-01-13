@@ -89,18 +89,17 @@ function ready(error,data) {
 function drawChart(data){
 	//CREATING FUNCTIONS USED FOR THIS CHART
 
-console.log(data)
-var chartData = data.filter(function(d) { return !isNaN(d.value); })
-var sources = ['vehicle','industry','dust','burning'];
-var labelDict = {'vehicle':'Cars/Trucks','industry':'Industry','dust':'Dust','burning':'Burning'}
+  var chartData = data.filter(function(d) { return !isNaN(d.value); })
+  var sources = ['vehicle','industry','dust','burning'];
+  var labelDict = {'vehicle':'Cars/Trucks','industry':'Industry','dust':'Dust','burning':'Burning'}
 
-var barHeight = 72;
-var barGap = 0;
-var containerSize = {'width':500,'height':(barHeight * sources.length) };
-var margin = {'right':20,'left':100,'top':80,'bottom':40};
-var chartSize = {'width':containerSize.width - margin.left - margin.right, 'height':containerSize.height - margin.top - margin.bottom}
+  var barHeight = 72;
+  var barGap = 0;
+  var containerSize = {'width':500,'height':(barHeight * sources.length) };
+  var margin = {'right':20,'left':100,'top':80,'bottom':40};
+  var chartSize = {'width':containerSize.width - margin.left - margin.right, 'height':containerSize.height - margin.top - margin.bottom}
 
-console.log(chartSize.height)
+
   var svg = d3.select("#chartContainer")
     .append('svg')
     .attr('width',containerSize.width)
@@ -120,22 +119,19 @@ console.log(chartSize.height)
     .domain(sources)
     .rangeBands([0, chartSize.height]);
 
-    console.log(y.range())
+  var xAxis = d3.svg.axis()
+  	.scale(x)
+  	.tickSize(-chartSize.height+5)
+  	.tickValues([0,20,40,60,80,100])
+  	.tickPadding(6)
+  	.tickFormat(function(d) { return d + '%'})
+  	.orient('bottom');
 
-
-    var xAxis = d3.svg.axis()
-    	.scale(x)
-    	.tickSize(-chartSize.height+5)
-    	.tickValues([0,20,40,60,80,100])
-    	.tickPadding(6)
-    	.tickFormat(function(d) { return d + '%'})
-    	.orient('bottom');
-
-    var xAxisLine = chart.append('g')
-    	.attr('class', 'xAxis')
-    	.call(xAxis)
-    	.attr('transform', 'translate(0' + "," + (chartSize.height-barHeight/3) + ")")
-    	.style('cursor', 'default')
+  var xAxisLine = chart.append('g')
+  	.attr('class', 'xAxis')
+  	.call(xAxis)
+  	.attr('transform', 'translate(0' + "," + (chartSize.height-barHeight/3) + ")")
+  	.style('cursor', 'default')
 
   var circles = chart.selectAll("circle")
     .data(chartData)
@@ -183,7 +179,7 @@ console.log(chartSize.height)
   	.attr('r',4)
   	.text('Studies relying on direct air sampling')
 
-   legend.append('circle')
+  legend.append('circle')
   	.attr('cx',170)
   	.attr('cy',0)
   	.attr('r',4)
