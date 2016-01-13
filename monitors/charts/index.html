@@ -59,7 +59,6 @@ body {
 
 }
 .labels text {
-    /*text-transform: capitalize;*/
     alignment-baseline: middle;
     font-size:13px;
 }
@@ -80,7 +79,6 @@ body {
     fill:none;
     stroke:rgb(50,50,50);
     stroke-width:2px;
-    /*shape-rendering: crispEdges;*/
 }
 .legend {
     shape-rendering: crispEdges;
@@ -165,44 +163,7 @@ function ready(error,coverageData) {
 function drawChart(coverageData){
     console.log(coverageData)
 	//CREATING FUNCTIONS USED FOR THIS CHART
-    /*
-    Annotation Notes
-
-    Anand Vihar
-        First appears 2015-04-04
-        Volatile coverage, no extended down periods
-
-    Civil Lines
-        First appears 2015-02-24
-        Goes down on 2015-05-01
-        Back up on 2015-06-01
-        Back down on 2015-07-10 until present
-
-    D.C.E.
-        Never collects PM2.5
-
-    Dwarka
-        First appears in pre-November 2014 period
-        Starts collecting PM2.5 on 2015-03-23
-        Volatile coverage
-        Goes down on 2015-09-29
-        Back up on 2015-10-28
     
-    IGI Airport
-        First appears 2014-11-14
-        Goes down 2015-05-01
-        Back up 2015-06-01
-        Back down 2015-07-10 until present
-
-    ITO
-        Only collects PM2.5 in pre-November 2014 period
-
-    Ihbas
-        First appears 2014-11-15
-        Goes down on 2015-05-26
-        Back up on 2015-11-09
-*/
-
     coverageData.sort(function (a, b) { 
         if (a.station > b.station) {
             return 1;
@@ -220,11 +181,6 @@ function drawChart(coverageData){
     var minWeekYear = {'week':+weekFormat(minDate),'year':+yearFormat(minDate)};
     console.log(minWeekYear)
     var stations = ['Anand Vihar','Civil Lines','D.C.E.','Dwarka','IGI Airport','ITO','Ihbas','Mandir Marg','Punjabi Bagh','R K Puram','Shadipur'];
-    // var chartData = [];
-
-    // stations.forEach(function(d) {
-    //     chartData.push({'station':d,'values':coverageData.filter(function(e) { return ((e.week>=minWeekYear.week && e.year===minWeekYear.year) || (e.year>minWeekYear.year)) && e.station===d; })});
-    // });
 
     var chartData = coverageData.filter(function(d) { return (d.week>=minWeekYear.week && d.year===minWeekYear.year) || (d.year>minWeekYear.year)})
 
@@ -263,17 +219,13 @@ function drawChart(coverageData){
         var weekNumber = getWeekNumber(week,year,minDate);
         labelWeeks[weekNumber] = d;
     })
-    console.log(labelWeeks)
-
 
     var rectSize = {'height':20,'width':10,'xgap':0,'ygap':0}
-    // var containerSize = {'width':500,'height':(barHeight * stations.length) };
     var margin = {'right':20,'left':100,'top':90,'bottom':80};
-    // var chartSize = {'width':containerSize.width - margin.left - margin.right, 'height':containerSize.height - margin.top - margin.bottom}
 
     var chartSize = {'width':(rectSize.width + rectSize.xgap)*weeks.length,'height':(rectSize.height + rectSize.ygap)*stations.length}
     var containerSize = {'width':chartSize.width + margin.left + margin.right,'height':chartSize.height + margin.top + margin.bottom };
-    console.log(chartSize.height)
+
     var svg = d3.select("#chartContainer")
         .append('svg')
         .attr('width',containerSize.width)
@@ -285,7 +237,6 @@ function drawChart(coverageData){
         .attr('height', chartSize.height)
         .attr('transform','translate('+margin.left+','+margin.top+')');
 
-    console.log(weeks)
     var x = d3.scale.ordinal()
         .domain(weeks)
         .rangeBands([0, chartSize.width]);
@@ -298,9 +249,9 @@ function drawChart(coverageData){
     var bandColors = ['#ffffcc','#c2e699','#78c679','#31a354','#006837']; // yellow green
     var bandColors = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8'] // yellow blue
     var bandColors = ['#eff3ff','#c6dbef','#9ecae1','#6baed6','#3182bd','#08519c'] // blue
-    var color = d3.scale.threshold().domain([]).range([]);
     var cutoffs = [.20,.40,.60,.80,1,1.1];
-    color.domain(cutoffs).range(bandColors); 
+    var color = d3.scale.threshold().domain(cutoffs).range(bandColors);
+
 
 
     var axisFormat = d3.time.format('%b %Y')
@@ -319,9 +270,7 @@ function drawChart(coverageData){
         .style('cursor', 'default')
         .selectAll("text")  
             .style("text-anchor", "start")
-            .attr("dx", "-.4em")
-        //     // .attr("dy", ".15em")
-        //     .attr("transform", "rotate(-15)" );
+            .attr("dx", "-.4em");
 
     var squares = chart.selectAll("rect")
         .data(chartData)
@@ -344,62 +293,32 @@ function drawChart(coverageData){
         .attr("class","square")
 
 
-  var labels = chart.append('g').attr('class','labels')
-  labels.selectAll('text')
-    .data(stations)
-    .enter().append('text')
-    .attr('x',-95)
-    .attr('y',function(d) {return y(d)+3})
-    .text(function(d) {
-        if (d==='Ihbas') return 'Dilshad Garden'; else return d})
+    var labels = chart.append('g').attr('class','labels')
+    labels.selectAll('text')
+        .data(stations)
+        .enter().append('text')
+        .attr('x',-95)
+        .attr('y',function(d) {return y(d)+3})
+        .text(function(d) {
+            if (d==='Ihbas') return 'Dilshad Garden'; else return d})
 
-  var title = chart.append('g')
+    var title = chart.append('g')
     title.append('text')
-    .attr('class','title')
-    .attr('x',-95)
-    .attr('y',-70)
-    .text("Are Delhi's air quality monitors working?")
+        .attr('class','title')
+        .attr('x',-95)
+        .attr('y',-70)
+        .text("Are Delhi's air quality monitors working?")
 
-  title.append('text')
-    .attr('class','subtitle')
-    .attr('x',-95)
-    .attr('y',-50)
-    .text("Weekly PM2.5 uptime at 11 government monitors around Delhi")
-
-
-
-    // .attr('height',15)
-    // .attr('width',15)
-    // .style('fill','white')
-    // .style('stroke','gray')
-
-  // legend.append('circle')
-  //   .attr('cx',-80)
-  //   .attr('cy',0)
-  //   .attr('r',4)
-  //   .style('stroke',"#17807e")
-  // legend.append('text')
-  //   .attr('x',-70)
-  //   .attr('y',1+3)
-  //   .attr('r',4)
-  //   .text('Studies relying on direct air sampling')
-
-  //  legend.append('circle')
-  //   .attr('cx',170)
-  //   .attr('cy',0)
-  //   .attr('r',4)
-  //   .style('stroke',"#e38d2c")
-  // legend.append('text')
-  //   .attr('x',180)
-  //   .attr('y',1+3)
-  //   .attr('r',4)
-  //   .text('Studies relying on secondary data')
+    title.append('text')
+        .attr('class','subtitle')
+        .attr('x',-95)
+        .attr('y',-50)
+        .text("Weekly PM2.5 uptime at 11 government monitors around Delhi")
 
     var colorLegend = d3.scale.threshold().domain([]).range([]);
     var cutoffs = [.20,.40,.60,.80,1];
     colorLegend.domain(cutoffs).range(bandColors); 
-    var legendScale = d3.scale.linear().domain([]).range([0, 320])
-    legendScale.domain([0, 1])
+    var legendScale = d3.scale.linear().domain([0, 1]).range([0, 320])
     
     var yAxis = d3.svg.axis()
         .scale(legendScale)
@@ -446,67 +365,66 @@ function drawChart(coverageData){
         .text("Percent of time monitor was collecting PM2.5 data")
         .attr("y", -8)
         .attr("x", -25)
-        // .style("font-weight", "bold")
         .style("font-size", "14px");
 
     g.selectAll("path").style("display","none");
     g.selectAll("line").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
     g.append('rect')
-    .attr('x',-25)
-    .attr('height',10)
-    .attr('width',10)
-    .style('fill','white')
-    .style('stroke','black')
-    .style('stroke-width','1px')
-    .style("shape-rendering", "crispEdges");
+        .attr('x',-25)
+        .attr('height',10)
+        .attr('width',10)
+        .style('fill','white')
+        .style('stroke','black')
+        .style('stroke-width','1px')
+        .style("shape-rendering", "crispEdges");
 
     g.append('text')
-    .attr('x',-25)
-    .attr('y',24)
-    .text('0%')
+        .attr('x',-25)
+        .attr('y',24)
+        .text('0%')
 
     g.append('rect')
-    .attr('x',335)
-    .attr('height',10)
-    .attr('width',10)
-    .style('fill','#08519c')
-    .style('stroke','black')
-    .style('stroke-width','1px')
-    .style("shape-rendering", "crispEdges");
+        .attr('x',335)
+        .attr('height',10)
+        .attr('width',10)
+        .style('fill','#08519c')
+        .style('stroke','black')
+        .style('stroke-width','1px')
+        .style("shape-rendering", "crispEdges");
    
    g.append('text')
-    .attr('x',328)
-    .attr('y',24)
-    .text('100%')
+        .attr('x',328)
+        .attr('y',24)
+        .text('100%')
 
     g.append('rect')
-    .attr('x',380)
-    .attr('height',10)
-    .attr('width',10)
-    .style('fill','rgb(200,200,200)')
-    .style('stroke','black')
-    .style('stroke-width','1px')
-    .style("shape-rendering", "crispEdges");
+        .attr('x',380)
+        .attr('height',10)
+        .attr('width',10)
+        .style('fill','rgb(200,200,200)')
+        .style('stroke','black')
+        .style('stroke-width','1px')
+        .style("shape-rendering", "crispEdges");
    
     g.append('text')
-    .attr('x',396)
-    .attr('y',10)
-    .text('Monitor not established or')
-   g.append('text')
-    .attr('x',396)
-    .attr('y',24)
-    .text('data not on CPCB portal')
+        .attr('x',396)
+        .attr('y',10)
+        .text('Monitor not established or')
+     g.append('text')
+        .attr('x',396)
+        .attr('y',24)
+        .text('data not on CPCB portal')
 
 
-  chart.append('rect')
-  .attr('x',function(d) { return x(1)})
-  .attr('y',-rectSize.height/2)
-  .attr('rx',2)
-  .attr('ry',2)
-  .attr('height',chartSize.height)
-  .attr('width',chartSize.width)
-  .attr('class','outline')
+    chart.append('rect')
+        .attr('x',function(d) { return x(1)})
+        .attr('y',-rectSize.height/2)
+        .attr('rx',2)
+        .attr('ry',2)
+        .attr('height',chartSize.height)
+        .attr('width',chartSize.width)
+        .attr('class','outline')
 
 }
 
