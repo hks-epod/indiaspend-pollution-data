@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<head>
+<title>Delhi Sources</title>
+<script src="assets/libraries/d3.v3.min.js"></script>
+<script src="assets/libraries/topojson.v1.min.js"></script>
+<script src="assets/libraries/queue.v1.min.js"></script>
+
+
+<style>
+circle {
+	fill:none;
+	stroke-width:1.25px;
+	/*stroke:red;*/
+}
+body {
+	/*font-family: "Helvetica Neue";*/
+	font-family: Arial, sans-serif;
+	font-size:14px;
+}
+.xAxis line {
+	fill:none;
+	stroke:rgb(200,200,200);
+	stroke-width:1px;
+	shape-rendering: crispEdges;
+}
+.xAxis path {
+	stroke:none;
+	fill:none;
+}
+.xAxis text {
+	font-size:12px;
+}
+.labels text {
+	/*text-transform: capitalize;*/
+	/*alignment-baseline: middle;*/
+	font-size:13px;
+}
+
+.legend text {
+	/*alignment-baseline: middle;*/
+	font-size:12px;
+}
+.title {
+	font-family: 'Franklin Gothic Medium',Arial, sans-serif;
+	/*font-weight:100;*/
+	font-size:18px;
+}
+</style>
+</head>
+
+<body>
+<div id="main">
+	<div id="chartContainer"></div>
+</div>
+</body>
+
+<script>
+//DATA PROCESSING FUNCTIONS
+function process(d, i) { //formats price data for the MAP AND LINE
+	function deString(d) {
+		if (d==="") {
+			return NaN;
+		} else {
+			return +d;
+		}
+	}
+	var array = {
+		study: d.study,
+		year: deString(d.year),
+		method: d.method,
+		source: d.source,
+		value: deString(d.value)
+	};
+	return array;
+}
+//THE DATA QUEUE
+queue()
+	.defer(d3.csv, "assets/data/sources.csv",process)
+	.await(ready);
+
+//THE FUNCTION THAT CALLS THE OTHER DRAW FUNCTIONS
+function ready(error,data) {
+	drawChart(data);
+}
+
+//THE FUNCTION THAT DRAWS THE CHART
+function drawChart(data){
+	//CREATING FUNCTIONS USED FOR THIS CHART
+
+console.log(data)
+var chartData = data.filter(function(d) { return !isNaN(d.value); })
+var sources = ['vehicle','industry','dust','burning'];
+var labelDict = {'vehicle':'Cars/Trucks','industry':'Industry','dust':'Dust','burning':'Burning'}
+
+var barHeight = 72;
+var barGap = 0;
+var containerSize = {'width':500,'height':(barHeight * sources.length) };
+var margin = {'right':20,'left':100,'top':80,'bottom':40};
+var chartSize = {'width':containerSize.width - margin.left - margin.right, 'height':containerSize.height - margin.top - margin.bottom}
+
+console.log(chartSize.height)
+  var svg = d3.select("#chartContainer")
+    .append('svg')
+    .attr('width',containerSize.width)
+    .attr('height',containerSize.height);
+
+  var chart = svg.append('g')
+    .attr('class', 'chart')
+    .attr('width', chartSize.width)
+    .attr('height', chartSize.height)
+    .attr('transform','translate('+margin.left+','+margin.top+')');
+
+  var x = d3.scale.linear()
+     .domain([0, 100])
+     .range([0, chartSize.width]);
+
+  var y = d3.scale.ordinal()
+    .domain(sources)
+    .rangeBands([0, chartSize.height]);
+
+    console.log(y.range())
+
+
+    var xAxis = d3.svg.axis()
+    	.scale(x)
+    	.tickSize(-chartSize.height+5)
+    	.tickValues([0,20,40,60,80,100])
+    	.tickPadding(6)
+    	.tickFormat(function(d) { return d + '%'})
+    	.orient('bottom');
+
+    var xAxisLine = chart.append('g')
+    	.attr('class', 'xAxis')
+    	.call(xAxis)
+    	.attr('transform', 'translate(0' + "," + (chartSize.height-barHeight/3) + ")")
+    	.style('cursor', 'default')
+
+  var circles = chart.selectAll("circle")
+    .data(chartData)
+    .enter().append("circle")
+    .attr("cx", function(d) { return x(d.value); })
+    .attr("cy", function(d) { return y(d.source); })
+    .attr("stroke",function(d) { 
+    	if (d.method==="receptor") return "#17807e";
+    	if (d.method==="source-based") return "#e38d2c";
+    })
+    .attr("r", 4);
+
+  var labels = chart.append('g').attr('class','labels')
+  labels.selectAll('text')
+  	.data(sources)
+  	.enter().append('text')
+  	.attr('x',-85)
+  	.attr('y',function(d) {return y(d)+3})
+  	.text(function(d) {return labelDict[d]})
+
+  var title = chart.append('g')
+  	title.append('text')
+  	.attr('class','title')
+  	.attr('x',-85)
+  	.attr('y',-60)
+  	.text("What's causing Delhi's air pollution?")
+
+  title.append('text')
+  	.attr('class','subtitle')
+  	.attr('x',-85)
+  	.attr('y',-40)
+  	.text("Percent contribution to ambient PM2.5 -- estimates from 15 studies")
+
+  var legend = chart.append('g')
+  	.attr('transform', 'translate(0' + "," + (chartSize.height+15) + ")")
+  	.attr('class','legend')
+  legend.append('circle')
+  	.attr('cx',-80)
+  	.attr('cy',0)
+  	.attr('r',4)
+  	.style('stroke',"#17807e")
+  legend.append('text')
+  	.attr('x',-70)
+  	.attr('y',1+3)
+  	.attr('r',4)
+  	.text('Studies relying on direct air sampling')
+
+   legend.append('circle')
+  	.attr('cx',170)
+  	.attr('cy',0)
+  	.attr('r',4)
+  	.style('stroke',"#e38d2c")
+  legend.append('text')
+  	.attr('x',180)
+  	.attr('y',1+3)
+  	.attr('r',4)
+  	.text('Studies relying on secondary data')
+}
+
+</script>
+</html>
